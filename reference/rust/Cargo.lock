@@ -205,6 +205,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "patch-guard-mcp"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "patch-guard",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "proc-macro2"
 version = "1.0.106"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,0 +1,16 @@
+[package]
+name = "patch-guard-mcp"
+description = "MCP stdio server exposing patch-guard conformance judgments as tools"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+patch-guard = { path = "../patch-guard" }
+serde.workspace = true
+serde_json.workspace = true
+
+[lints]
+workspace = true

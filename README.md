@@ -47,6 +47,7 @@
 - `adapters/emucap/`: 선택 가능한 런타임 검증 어댑터
 - `reference/rust/crates/patch-guard/`: 위 판정을 구현한 Rust 참고 라이브러리
 - `reference/rust/examples/synthetic-cli/`: 자작 입력만 쓰는 교체 가능한 CLI 예제
+- `reference/rust/crates/patch-guard-mcp/`: 위 판정을 MCP 도구로 노출하는 stdio 서버
 - `reference/python/poc/`: 제품 CLI와 분리된 Python PoC 예제
 - `AGENTS.md`: 이 템플릿을 확장하는 에이전트가 지킬 작업 경계
 
@@ -104,6 +105,33 @@ cargo run -p synthetic-cli -- verify \
 런타임 검증에는 [emucap 어댑터](adapters/emucap/) 사용을 권장한다. 이 선택은 필수가 아니며, 정확한 산출물 식별과 독립 증거를 제공하는 다른 관찰 수단으로 교체할 수 있다. `emucap`을 선택했다면 설치·연결 방법을 프로젝트에 복제하지 말고 공개 배포 문서와 이 저장소의 얇은 연결 규칙을 따른다.
 
 원본 이미지와 패치된 전체 이미지는 커밋하지 않는다. 직접 작성했거나 배포 조건을 확인한 입력과 원본을 재현하지 않는 결과만 저장소에 둔다.
+
+## MCP 서버
+
+`patch-guard`의 언어 중립 판정을 [MCP](https://modelcontextprotocol.io) 도구로 노출하는 stdio 서버가 [`reference/rust/crates/patch-guard-mcp/`](reference/rust/crates/patch-guard-mcp/)에 있다. 에이전트나 MCP 호스트가 표준 입출력의 줄 단위 JSON-RPC 2.0으로 연결해 반례를 같은 결과로 판정할 수 있다. 참고 코어와 마찬가지로 이 서버도 교체 가능한 구현이며, 대상 프로젝트는 자신의 언어와 검증기로 같은 도구 표면을 다시 만들어도 된다.
+
+노출하는 도구는 `conformance/`의 판정과 1:1로 대응한다.
+
+- `verify_source`: 공급된 바이트가 선언된 원본 식별(길이·SHA-256)과 일치하는지 확인
+- `verify_exact_roundtrip`: 무변경 왕복 경계가 바이트 단위로 재현되는지 확인
+- `evaluate_readiness`: 빌드 모드와 번역 범위를 판정(릴리스 후보는 완료와 사람 승인 요구)
+- `validate_product_graph`: 최종 산출물이 순수 원천에서 제품 그래프로 재생성되는지 검증
+- `require_runtime_pass`: 정확한 산출물 해시에 묶인 통과 런타임 증거를 요구
+- `apply_write_plan`: Expected Write 계획을 기준 이미지에 적용·감사
+
+각 도구는 `{"decision":"accept"|"reject"}` 구조로 답한다. `reject`는 정상 판정 결과이지 전송 오류가 아니다. 잘못된 인자만 JSON-RPC `invalid params` 오류로 구분된다. 기계어 쓰기는 ISA 검증기가 JSON 경계를 넘어올 수 없으므로 항상 거부되며, 대상 프로젝트는 자신의 검증기를 프로세스 내부에 설치해 이 경계를 유지한다.
+
+```bash
+cd reference/rust
+cargo run -p patch-guard-mcp
+
+# 예: 초기화 후 도구 목록 조회
+printf '%s\n' \
+  '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{}}}' \
+  '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+  | cargo run -q -p patch-guard-mcp
+```
 
 ## 자체 검증
 

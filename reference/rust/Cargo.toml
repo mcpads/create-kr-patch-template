@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/patch-guard", "examples/synthetic-cli"]
+members = ["crates/patch-guard", "crates/patch-guard-mcp", "examples/synthetic-cli"]
 resolver = "3"
 
 [workspace.package]
