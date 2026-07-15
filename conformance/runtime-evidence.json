@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "passed-evidence-for-exact-artifact",
+      "scenario": "passed_evidence_for_exact_artifact",
+      "expected": "accept",
+      "given": "a passed runtime scenario has evidence and names the exact artifact identity being gated"
+    },
+    {
+      "id": "evidence-from-different-build",
+      "scenario": "evidence_from_different_build",
+      "expected": "reject",
+      "given": "the runtime evidence names a different artifact hash than the current build"
+    },
+    {
+      "id": "passed-without-evidence",
+      "scenario": "passed_without_evidence",
+      "expected": "reject",
+      "given": "a scenario claims success without any independently identified evidence artifact"
+    },
+    {
+      "id": "failed-runtime-scenario",
+      "scenario": "failed_runtime_scenario",
+      "expected": "reject",
+      "given": "the evidence is artifact-bound but the required scenario did not pass"
+    }
+  ]
+}

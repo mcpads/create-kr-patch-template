@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "complete-boundary-is-identical",
+      "scenario": "complete_boundary_is_identical",
+      "expected": "accept",
+      "given": "an unchanged decode and rebuild path reproduces every byte in its declared boundary"
+    },
+    {
+      "id": "tail-diff-hidden-by-payload-check",
+      "scenario": "tail_diff_hidden_by_payload_check",
+      "expected": "reject",
+      "given": "the decoded payload matches but one byte in the surrounding declared boundary changes"
+    },
+    {
+      "id": "partial-boundary-comparison",
+      "scenario": "partial_boundary_comparison",
+      "expected": "reject",
+      "given": "the rebuilt value omits bytes from the declared no-change boundary"
+    }
+  ]
+}

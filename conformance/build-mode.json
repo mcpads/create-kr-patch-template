@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "development-preserves-incomplete",
+      "scenario": "development_preserves_incomplete",
+      "expected": "accept",
+      "given": "a development build localizes one unit and explicitly preserves the unfinished unit from the source"
+    },
+    {
+      "id": "development-uses-draft",
+      "scenario": "development_uses_draft",
+      "expected": "accept",
+      "given": "a development build explicitly selects a draft localized unit and reports it as unresolved"
+    },
+    {
+      "id": "release-incomplete",
+      "scenario": "release_incomplete",
+      "expected": "reject",
+      "given": "a release candidate contains a source-preserved or unfinished unit in its declared localization scope"
+    },
+    {
+      "id": "release-unapproved",
+      "scenario": "release_unapproved",
+      "expected": "reject",
+      "given": "all units are complete but the declared localization scope lacks human release approval"
+    },
+    {
+      "id": "release-changed-after-approval",
+      "scenario": "release_changed_after_approval",
+      "expected": "reject",
+      "given": "all units are complete but their current content revision differs from the revision a person approved"
+    },
+    {
+      "id": "release-complete-approved",
+      "scenario": "release_complete_approved",
+      "expected": "accept",
+      "given": "all units in the declared scope are selected, complete, and approved for release"
+    }
+  ]
+}

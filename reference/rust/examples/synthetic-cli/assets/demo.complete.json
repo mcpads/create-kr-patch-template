@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "asset_id": "synthetic-translation-complete-v1",
+  "source": {
+    "id": "self-authored-synthetic-image-v1",
+    "sha256": "e8a94f246ababf82ee6d9176a31b9415958f6adbdb3762ef861e58c7b81d68eb"
+  },
+  "release_approval": {
+    "decision": "approved",
+    "approved_by": "template_fixture_author",
+    "reviewed_content_sha256": "5f653d4665f1f8ba2315b79b14f0e5dd485af58db270d69ffe2f6e23cd77b129",
+    "scope": "synthetic-demo-two-lines",
+    "basis": "self-authored source and translations reviewed as test fixtures"
+  },
+  "entries": [
+    {
+      "id": "demo.dialog.0001",
+      "raw_hex": "48 45 4C 4C 4F 00",
+      "source_text": "HELLO{end}",
+      "ko": "안녕{end}",
+      "review_state": "complete",
+      "build": "use_localized"
+    },
+    {
+      "id": "demo.dialog.0002",
+      "raw_hex": "57 4F 52 4C 44 00",
+      "source_text": "WORLD{end}",
+      "ko": "세계{end}",
+      "review_state": "complete",
+      "build": "use_localized"
+    }
+  ]
+}

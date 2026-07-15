@@ -1,0 +1,53 @@
+# Optional reference implementation outputs
+/target/
+/reference/rust/target/
+
+# Copyrighted or locally supplied source media
+/originals/
+/roms/
+/disc/
+
+# Reproducible builds, work files, and runtime evidence
+/out/
+/work/
+/reference/rust/out/
+/reference/rust/work/
+/evidence/private/
+/.emucap/
+
+# Emulator state
+*.sav
+*.srm
+*.state
+*.state[0-9]*
+*.mcr
+*.mcd
+*.mst
+
+# Common full-image formats that should stay under ignored input/output roots
+*.sfc
+*.smc
+*.nes
+*.unf
+*.unif
+*.gb
+*.gbc
+*.gba
+*.gg
+*.nds
+*.iso
+*.cue
+*.chd
+*.gdi
+*.cdi
+*.hdi
+*.hdm
+*.fdi
+*.d88
+
+# Host and editor noise
+.DS_Store
+*.swp
+*~
+__pycache__/
+*.py[cod]

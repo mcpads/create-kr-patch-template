@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "cases": [
+    {
+      "id": "owned-data-write",
+      "scenario": "owned_data_write",
+      "expected": "accept",
+      "given": "one data write has one actor, an exact original-byte precondition, and one matching data region"
+    },
+    {
+      "id": "overlapping-writes",
+      "scenario": "overlapping_writes",
+      "expected": "reject",
+      "given": "two writes overlap even though they name the same actor"
+    },
+    {
+      "id": "protected-region-write",
+      "scenario": "protected_region_write",
+      "expected": "reject",
+      "given": "a tracked write targets a protected region"
+    },
+    {
+      "id": "wrong-original-bytes",
+      "scenario": "wrong_original_bytes",
+      "expected": "reject",
+      "given": "the declared original-byte precondition differs from the verified baseline"
+    },
+    {
+      "id": "untracked-final-diff",
+      "scenario": "untracked_final_diff",
+      "expected": "reject",
+      "given": "the final image changes one byte outside all Expected Writes"
+    },
+    {
+      "id": "raw-data-in-machine-code",
+      "scenario": "raw_data_in_machine_code",
+      "expected": "reject",
+      "given": "a data-intent write tries to place opcode bytes in a declared machine-code region"
+    },
+    {
+      "id": "machine-code-without-verifier",
+      "scenario": "machine_code_without_verifier",
+      "expected": "reject",
+      "given": "a machine-code write declares assembly provenance but no target ISA verifier is installed"
+    },
+    {
+      "id": "verified-machine-code",
+      "scenario": "verified_machine_code",
+      "expected": "accept",
+      "given": "the target verifier matches replacement bytes to the assembly source and fully decodes the declared ISA profile"
+    }
+  ]
+}
