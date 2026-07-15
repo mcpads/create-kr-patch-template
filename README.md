@@ -38,6 +38,9 @@
 
 ## 저장소 구성
 
+- `assets/`: 번역 조각과 직접 작성한 폰트·그래픽 원천을 위한 프로젝트 골격
+- `config/`, `src/`, `tests/`: 대상 프로젝트가 채울 설정·구현·검증 골격
+- `research/`: 제품 그래프와 분리된 조사 기록과 재현 가능한 PoC 원천
 - `conformance/`: 특정 언어에 속하지 않는 필수 판정과 반례
 - `adapters/emucap/`: 선택 가능한 런타임 검증 어댑터
 - `reference/rust/crates/patch-guard/`: 위 판정을 구현한 Rust 참고 라이브러리
