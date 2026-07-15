@@ -5,8 +5,7 @@ use std::{fs, path::PathBuf};
 
 use anyhow::{Context, Result, ensure};
 use clap::{Parser, Subcommand, ValueEnum};
-use patch_guard::{BuildMode, sha256_hex, verify_source};
-use serde::Serialize;
+use patch_guard::{BuildMode, sha256_hex};
 use target::BuildResult;
 
 #[derive(Debug, Parser)]
@@ -48,13 +47,6 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
-    /// Emit research evidence that is deliberately not accepted by the product build.
-    Poc {
-        #[arg(long)]
-        source: PathBuf,
-        #[arg(long)]
-        evidence: PathBuf,
-    },
 }
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -70,16 +62,6 @@ impl From<CliBuildMode> for BuildMode {
             CliBuildMode::ReleaseCandidate => Self::ReleaseCandidate,
         }
     }
-}
-
-#[derive(Debug, Serialize)]
-struct PocEvidence {
-    schema_version: u32,
-    artifact_kind: &'static str,
-    source_id: &'static str,
-    source_sha256: String,
-    observation: &'static str,
-    product_input: bool,
 }
 
 fn main() -> Result<()> {
@@ -123,21 +105,6 @@ fn main() -> Result<()> {
             );
             print_summary(&result);
             println!("verified={}", output.display());
-        }
-        Command::Poc { source, evidence } => {
-            let bytes =
-                fs::read(&source).with_context(|| format!("read source {}", source.display()))?;
-            let verified = verify_source(target::source_spec(), &bytes)?;
-            let report = PocEvidence {
-                schema_version: 1,
-                artifact_kind: "research_output",
-                source_id: target::DEMO_SOURCE_ID,
-                source_sha256: verified.sha256,
-                observation: "the self-authored image contains two terminated ASCII strings",
-                product_input: false,
-            };
-            write_file(&evidence, &serde_json::to_vec_pretty(&report)?)?;
-            println!("research_evidence={}", evidence.display());
         }
     }
     Ok(())

@@ -39,12 +39,15 @@
 ## 저장소 구성
 
 - `assets/`: 번역 조각과 직접 작성한 폰트·그래픽 원천을 위한 프로젝트 골격
-- `config/`, `src/`, `tests/`: 대상 프로젝트가 채울 설정·구현·검증 골격
-- `research/`: 제품 그래프와 분리된 조사 기록과 재현 가능한 PoC 원천
+- `config/`: 대상 프로젝트가 채울 설정 골격
+- [`src/`](src/): 번역 선택·인코딩과 이진 배치를 분리한 제품 구현 골격
+- `tests/translation/`, `tests/placement/`: 두 구현 경계와 그 연결을 검증하는 골격
+- [`research/`](research/): 제품 그래프와 분리된 조사 기록과 재현 가능한 PoC 원천
 - `conformance/`: 특정 언어에 속하지 않는 필수 판정과 반례
 - `adapters/emucap/`: 선택 가능한 런타임 검증 어댑터
 - `reference/rust/crates/patch-guard/`: 위 판정을 구현한 Rust 참고 라이브러리
 - `reference/rust/examples/synthetic-cli/`: 자작 입력만 쓰는 교체 가능한 CLI 예제
+- `reference/python/poc/`: 제품 CLI와 분리된 Python PoC 예제
 - `AGENTS.md`: 이 템플릿을 확장하는 에이전트가 지킬 작업 경계
 
 대상 프로젝트는 합성 예제를 복사해 플랫폼 구현을 덧붙여도 되고, 다른 언어로 검증 코어와 CLI를 새로 만들어도 된다. 참고 라이브러리를 수정해 플랫폼 예외를 넣기보다 대상 어댑터와 검증기를 확장하는 편이 경계를 보존하기 쉽다.
@@ -54,6 +57,11 @@
 ```bash
 cd reference/rust
 cargo run -p synthetic-cli -- make-source --output out/demo/source.bin
+
+# 제품 입력으로 쓰이지 않는 Python 조사 예시
+python3 ../python/poc/scan_ascii.py \
+  --source out/demo/source.bin \
+  --evidence out/research/poc.json
 
 # 미완료 항목을 원문으로 남기는 개발 빌드
 cargo run -p synthetic-cli -- build \
@@ -77,11 +85,6 @@ cargo run -p synthetic-cli -- verify \
   --source out/demo/source.bin \
   --translations examples/synthetic-cli/assets/demo.complete.json \
   --output out/demo/release.bin
-
-# 제품 입력으로 쓰이지 않는 별도 조사 예시
-cargo run -p synthetic-cli -- poc \
-  --source out/demo/source.bin \
-  --evidence out/research/poc.json
 ```
 
 `build`에는 PoC 산출물을 받는 옵션이 없다. 합성 예제의 포인터, 인코딩과 체크섬은 자작 포맷을 완주해 보기 위한 예시일 뿐 다른 게임에 전이할 지식이 아니다.
@@ -107,6 +110,7 @@ cargo run -p synthetic-cli -- poc \
 원격 CI는 기본으로 만들지 않는다. 에이전트가 로컬에서 다음 검사를 실행하며, 외부 실행 비용이 드는 자동화는 프로젝트 사용자가 별도로 선택한다.
 
 ```bash
+python3 -m unittest discover -s reference/python/poc -p '*_tests.py'
 cd reference/rust
 cargo fmt --all -- --check
 cargo clippy --all-targets --all-features -- -D warnings

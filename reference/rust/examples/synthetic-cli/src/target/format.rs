@@ -5,7 +5,7 @@ use patch_guard::SourceSpec;
 
 use crate::translation::{AssetDisposition, TranslationAsset, control_tokens};
 
-pub const DEMO_SOURCE_ID: &str = "self-authored-synthetic-image-v1";
+pub(super) const DEMO_SOURCE_ID: &str = "self-authored-synthetic-image-v1";
 pub(super) const DEMO_OUTPUT_ID: &str = "synthetic-patched-image-v1";
 pub(super) const DEMO_SOURCE_SHA256: &str =
     "e8a94f246ababf82ee6d9176a31b9415958f6adbdb3762ef861e58c7b81d68eb";
