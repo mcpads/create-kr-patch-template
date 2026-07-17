@@ -8,8 +8,8 @@ pub mod write_plan;
 
 pub use artifact_graph::{ProductGraph, ProductGraphReport, ProductStep, RootArtifact, RootKind};
 pub use build_mode::{
-    BuildDisposition, BuildMode, LocalizationScope, LocalizationUnit, ReadinessReport,
-    ReleaseApproval, ReviewState, evaluate_readiness,
+    BuildDisposition, BuildMode, LocalizationScope, LocalizationUnit, PopulationStatus,
+    ReadinessReport, ReleaseApproval, ReviewState, evaluate_readiness, review_revision,
 };
 pub use report::{ArtifactReport, BuildReport};
 pub use roundtrip::{ExactRoundTripReport, verify_exact_roundtrip};

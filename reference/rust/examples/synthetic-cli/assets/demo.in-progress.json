@@ -8,7 +8,7 @@
   "release_approval": {
     "decision": "pending",
     "approved_by": null,
-    "reviewed_content_sha256": null,
+    "reviewed_scope_sha256": null,
     "scope": "synthetic-demo-two-lines",
     "basis": "one line remains a draft and is preserved from the source"
   },

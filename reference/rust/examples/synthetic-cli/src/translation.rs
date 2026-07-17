@@ -2,7 +2,8 @@ use std::collections::BTreeSet;
 
 use anyhow::{Context, Result, bail, ensure};
 use patch_guard::{
-    BuildDisposition, LocalizationScope, LocalizationUnit, ReleaseApproval, ReviewState, sha256_hex,
+    BuildDisposition, LocalizationScope, LocalizationUnit, PopulationStatus, ReleaseApproval,
+    ReviewState, sha256_hex,
 };
 use serde::{Deserialize, Serialize};
 
@@ -28,7 +29,7 @@ pub struct TranslationSource {
 pub struct AssetApproval {
     pub decision: ApprovalDecision,
     pub approved_by: Option<String>,
-    pub reviewed_content_sha256: Option<String>,
+    pub reviewed_scope_sha256: Option<String>,
     pub scope: String,
     pub basis: String,
 }
@@ -108,10 +109,17 @@ impl TranslationAsset {
                     .is_some_and(|value| !value.trim().is_empty()),
                 "approved translation asset lacks an approver"
             );
+            let reviewed_scope_sha256 = self
+                .release_approval
+                .reviewed_scope_sha256
+                .as_deref()
+                .unwrap_or_default();
             ensure!(
-                self.release_approval.reviewed_content_sha256.as_deref()
-                    == Some(self.content_revision()?.as_str()),
-                "translation content changed after approval"
+                reviewed_scope_sha256.len() == 64
+                    && reviewed_scope_sha256
+                        .bytes()
+                        .all(|byte| byte.is_ascii_hexdigit()),
+                "approved translation asset lacks a valid reviewed scope SHA-256"
             );
         }
         ensure!(!self.entries.is_empty(), "translation asset has no entries");
@@ -133,16 +141,22 @@ impl TranslationAsset {
         Ok(())
     }
 
-    pub fn localization_scope(&self) -> Result<LocalizationScope> {
+    pub fn localization_scope(
+        &self,
+        population_status: PopulationStatus,
+        known_unit_ids: &[&str],
+    ) -> Result<LocalizationScope> {
         Ok(LocalizationScope {
             id: self.release_approval.scope.clone(),
             content_revision: self.content_revision()?,
+            population_status,
+            known_unit_ids: known_unit_ids.iter().map(|id| (*id).to_owned()).collect(),
             release_approval: match self.release_approval.decision {
                 ApprovalDecision::Pending => ReleaseApproval::Pending,
                 ApprovalDecision::Approved => ReleaseApproval::Approved,
                 ApprovalDecision::Rejected => ReleaseApproval::Rejected,
             },
-            approved_revision: self.release_approval.reviewed_content_sha256.clone(),
+            approved_revision: self.release_approval.reviewed_scope_sha256.clone(),
             units: self
                 .entries
                 .iter()

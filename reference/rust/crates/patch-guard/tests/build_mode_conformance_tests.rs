@@ -2,8 +2,8 @@ mod support;
 
 use anyhow::Result;
 use patch_guard::{
-    BuildDisposition, BuildMode, LocalizationScope, LocalizationUnit, ReleaseApproval, ReviewState,
-    evaluate_readiness,
+    BuildDisposition, BuildMode, LocalizationScope, LocalizationUnit, PopulationStatus,
+    ReleaseApproval, ReviewState, evaluate_readiness, review_revision,
 };
 
 use support::run_manifest;
@@ -21,8 +21,16 @@ fn run_build_mode_scenario(scenario: &str) -> Result<()> {
             scope.units[1].disposition = BuildDisposition::UseLocalized;
             BuildMode::Development
         }
+        "development_population_in_progress" => {
+            scope.population_status = PopulationStatus::InProgress;
+            BuildMode::Development
+        }
+        "development_known_unit_omitted" => {
+            scope.units.pop();
+            BuildMode::Development
+        }
         "release_incomplete" => {
-            scope.release_approval = ReleaseApproval::Approved;
+            approve(&mut scope)?;
             BuildMode::ReleaseCandidate
         }
         "release_unapproved" => {
@@ -35,10 +43,26 @@ fn run_build_mode_scenario(scenario: &str) -> Result<()> {
             scope.approved_revision = Some("older-revision".to_owned());
             BuildMode::ReleaseCandidate
         }
+        "release_population_unconfirmed" => {
+            complete_scope(&mut scope);
+            scope.population_status = PopulationStatus::InProgress;
+            approve(&mut scope)?;
+            BuildMode::ReleaseCandidate
+        }
+        "release_population_changed_after_approval" => {
+            complete_scope(&mut scope);
+            approve(&mut scope)?;
+            scope.known_unit_ids.push("line.3".to_owned());
+            scope.units.push(LocalizationUnit {
+                id: "line.3".to_owned(),
+                disposition: BuildDisposition::UseLocalized,
+                review_state: ReviewState::Complete,
+            });
+            BuildMode::ReleaseCandidate
+        }
         "release_complete_approved" => {
             complete_scope(&mut scope);
-            scope.release_approval = ReleaseApproval::Approved;
-            scope.approved_revision = Some(scope.content_revision.clone());
+            approve(&mut scope)?;
             BuildMode::ReleaseCandidate
         }
         other => panic!("unknown build-mode conformance scenario {other}"),
@@ -50,6 +74,8 @@ fn incomplete_scope() -> LocalizationScope {
     LocalizationScope {
         id: "declared-scope".to_owned(),
         content_revision: "current-revision".to_owned(),
+        population_status: PopulationStatus::Confirmed,
+        known_unit_ids: vec!["line.1".to_owned(), "line.2".to_owned()],
         release_approval: ReleaseApproval::Pending,
         approved_revision: None,
         units: vec![
@@ -72,4 +98,10 @@ fn complete_scope(scope: &mut LocalizationScope) {
         unit.disposition = BuildDisposition::UseLocalized;
         unit.review_state = ReviewState::Complete;
     }
+}
+
+fn approve(scope: &mut LocalizationScope) -> Result<()> {
+    scope.release_approval = ReleaseApproval::Approved;
+    scope.approved_revision = Some(review_revision(scope)?);
+    Ok(())
 }

@@ -14,6 +14,18 @@
       "given": "a development build explicitly selects a draft localized unit and reports it as unresolved"
     },
     {
+      "id": "development-population-in-progress",
+      "scenario": "development_population_in_progress",
+      "expected": "accept",
+      "given": "a development build declares that more localization units may still be discovered while accounting for every currently known unit"
+    },
+    {
+      "id": "development-known-unit-omitted",
+      "scenario": "development_known_unit_omitted",
+      "expected": "reject",
+      "given": "a currently known localization unit is absent from the translation scope even though unfinished units could have preserved their source content"
+    },
+    {
       "id": "release-incomplete",
       "scenario": "release_incomplete",
       "expected": "reject",
@@ -32,10 +44,22 @@
       "given": "all units are complete but their current content revision differs from the revision a person approved"
     },
     {
+      "id": "release-population-unconfirmed",
+      "scenario": "release_population_unconfirmed",
+      "expected": "reject",
+      "given": "all currently known units are complete and approved but the declared localization population may still grow"
+    },
+    {
+      "id": "release-population-changed-after-approval",
+      "scenario": "release_population_changed_after_approval",
+      "expected": "reject",
+      "given": "the known localization population changed after a person approved the previous scope snapshot"
+    },
+    {
       "id": "release-complete-approved",
       "scenario": "release_complete_approved",
       "expected": "accept",
-      "given": "all units in the declared scope are selected, complete, and approved for release"
+      "given": "the declared population is confirmed and all units in that scope are selected, complete, and approved for release"
     }
   ]
 }

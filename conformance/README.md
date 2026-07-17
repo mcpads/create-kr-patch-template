@@ -4,7 +4,7 @@
 
 - `write-plan.json`: 영역, 쓰기 소유권, 원본 전제와 기계어 검증
 - `product-graph.json`: 순수 원천과 제품 단계의 산출물 계보
-- `build-mode.json`: 개발 빌드의 자율성과 릴리스 후보의 완료 조건
+- `build-mode.json`: 알려진 번역 모집단, 개발 빌드의 자율성과 릴리스 후보의 완료 조건
 - `roundtrip.json`: 무변경을 주장하는 변환 경계의 바이트 동일성
 - `runtime-evidence.json`: 실행 증거와 검증 대상 산출물의 연결
 

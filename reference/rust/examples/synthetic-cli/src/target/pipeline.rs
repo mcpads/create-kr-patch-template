@@ -2,9 +2,9 @@ use std::ops::Range;
 
 use anyhow::{Context, Result, ensure};
 use patch_guard::{
-    ArtifactReport, BuildMode, BuildReport, ExpectedWrite, ImageRegion, ProductGraph, ProductStep,
-    RegionKind, ResizePlan, RootArtifact, RootKind, WriteIntent, WritePlan, evaluate_readiness,
-    verify_source,
+    ArtifactReport, BuildMode, BuildReport, ExpectedWrite, ImageRegion, PopulationStatus,
+    ProductGraph, ProductStep, RegionKind, ResizePlan, RootArtifact, RootKind, WriteIntent,
+    WritePlan, evaluate_readiness, verify_source,
 };
 
 use crate::translation::{AssetDisposition, TranslationAsset};
@@ -31,7 +31,10 @@ pub fn build(source: &[u8], translation_bytes: &[u8], mode: BuildMode) -> Result
     let asset = TranslationAsset::from_slice(translation_bytes)?;
     asset.validate_identity(&verified.id, &verified.sha256)?;
     validate_population(source, &asset)?;
-    let readiness = evaluate_readiness(mode, &asset.localization_scope()?)?;
+    let readiness = evaluate_readiness(
+        mode,
+        &asset.localization_scope(PopulationStatus::Confirmed, &super::format::ENTRY_IDS)?,
+    )?;
     let graph = product_graph(&verified.id, &asset.asset_id).validate()?;
 
     let mut payload = Vec::new();
