@@ -1,20 +1,6 @@
 use anyhow::{Result, ensure};
-use serde::Serialize;
 
-use crate::source::sha256_hex;
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ExactRoundTripReport {
-    pub boundary_id: String,
-    pub len: usize,
-    pub sha256: String,
-}
-
-pub fn verify_exact_roundtrip(
-    boundary_id: &str,
-    original: &[u8],
-    rebuilt: &[u8],
-) -> Result<ExactRoundTripReport> {
+pub fn verify_exact_roundtrip(boundary_id: &str, original: &[u8], rebuilt: &[u8]) -> Result<()> {
     ensure!(
         !boundary_id.trim().is_empty(),
         "round-trip boundary id is empty"
@@ -37,11 +23,7 @@ pub fn verify_exact_roundtrip(
         );
     }
 
-    Ok(ExactRoundTripReport {
-        boundary_id: boundary_id.to_owned(),
-        len: original.len(),
-        sha256: sha256_hex(original),
-    })
+    Ok(())
 }
 
 #[cfg(test)]

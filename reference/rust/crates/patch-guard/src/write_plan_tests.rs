@@ -65,10 +65,7 @@ fn accepts_owned_non_overlapping_data_write() {
         )],
         ..WritePlan::default()
     };
-    assert_eq!(
-        plan.apply(&[0, 1, 2, 3], None).unwrap().output,
-        [0, 8, 9, 3]
-    );
+    assert_eq!(plan.apply(&[0, 1, 2, 3], None).unwrap(), [0, 8, 9, 3]);
 }
 
 #[test]
@@ -120,9 +117,7 @@ fn machine_code_requires_and_uses_project_verifier() {
     };
     assert!(plan.apply(&[0, 1], None).is_err());
     assert_eq!(
-        plan.apply(&[0, 1], Some(&ExactAssemblyVerifier))
-            .unwrap()
-            .output,
+        plan.apply(&[0, 1], Some(&ExactAssemblyVerifier)).unwrap(),
         [0xaa, 0xbb]
     );
 }
@@ -151,7 +146,7 @@ fn growth_and_final_diff_require_explicit_ownership() {
         ],
         writes: vec![write("tail", "layout", 2, &[], &[2, 3], WriteIntent::Data)],
     };
-    let mut output = complete.apply(&baseline, None).unwrap().output;
+    let mut output = complete.apply(&baseline, None).unwrap();
     output[0] = 9;
     assert!(complete.audit(&baseline, &output, None).is_err());
 }

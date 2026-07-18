@@ -7,7 +7,6 @@ use super::{MachineCodeCheck, MachineCodeVerifier, RegionKind, WriteIntent, Writ
 pub(super) struct ValidatedPlan {
     pub(super) output_len: usize,
     pub(super) write_ranges: Vec<Range<usize>>,
-    pub(super) region_indices: Vec<usize>,
 }
 
 impl WritePlan {
@@ -66,7 +65,6 @@ impl WritePlan {
 
         let write_ranges = self.write_ranges()?;
         let mut write_ids = BTreeSet::new();
-        let mut region_indices = Vec::with_capacity(self.writes.len());
         for (index, (write, range)) in self.writes.iter().zip(&write_ranges).enumerate() {
             ensure_nonempty("write id", &write.id)?;
             ensure_nonempty("write actor", &write.actor)?;
@@ -168,7 +166,6 @@ impl WritePlan {
                     provenance.isa_profile_id
                 );
             }
-            region_indices.push(region_index);
         }
 
         if output_len > baseline.len() {
@@ -183,7 +180,6 @@ impl WritePlan {
         Ok(ValidatedPlan {
             output_len,
             write_ranges,
-            region_indices,
         })
     }
 

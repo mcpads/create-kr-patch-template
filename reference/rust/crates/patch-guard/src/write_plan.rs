@@ -4,10 +4,8 @@ mod validation;
 use std::ops::Range;
 
 use anyhow::Result;
-use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RegionKind {
     Data,
     Metadata,
@@ -93,33 +91,6 @@ pub struct WritePlan {
     pub resize: Option<ResizePlan>,
     pub regions: Vec<ImageRegion>,
     pub writes: Vec<ExpectedWrite>,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ResizeReport {
-    pub actor: String,
-    pub purpose: String,
-    pub input_len: usize,
-    pub output_len: usize,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct WriteReport {
-    pub id: String,
-    pub actor: String,
-    pub purpose: String,
-    pub region_id: String,
-    pub intent: String,
-    pub offset: usize,
-    pub len: usize,
-    pub changed_bytes: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct ApplyResult {
-    pub output: Vec<u8>,
-    pub resize: Option<ResizeReport>,
-    pub writes: Vec<WriteReport>,
 }
 
 #[cfg(test)]

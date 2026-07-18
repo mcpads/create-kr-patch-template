@@ -38,7 +38,7 @@ fn run_write_scenario(scenario: &str) -> Result<()> {
         }
         "untracked_final_diff" => {
             let plan = data_plan();
-            let mut output = plan.apply(&baseline, None)?.output;
+            let mut output = plan.apply(&baseline, None)?;
             output[3] = 9;
             plan.audit(&baseline, &output, None)
         }
