@@ -78,12 +78,34 @@ pub struct MachineCodeCheck<'a> {
     pub baseline: &'a [u8],
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DecodedInstruction {
+    /// Byte offset relative to the start of the Expected Write.
+    pub offset: usize,
+    /// Number of replacement bytes consumed by this instruction.
+    pub len: usize,
+    /// Canonical instruction text accepted by the project reassembler.
+    pub canonical: String,
+}
+
+/// Project adapter for the declared ISA profile.
+///
+/// The core verifies source assembly, contiguous instruction coverage, and
+/// canonical disassembly round-trip. The project must test profile-wide ISA
+/// coverage separately.
 pub trait MachineCodeVerifier {
     /// Assemble the declared source independently of the replacement bytes in the write plan.
-    fn assemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>>;
+    fn assemble_source(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>>;
 
-    /// Return the number of consecutive replacement bytes decoded under the complete ISA profile.
-    fn decoded_len(&self, check: &MachineCodeCheck<'_>) -> Result<usize>;
+    /// Decode the replacement under the ISA profile declared by the project.
+    fn disassemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<DecodedInstruction>>;
+
+    /// Assemble the canonical instruction sequence returned by `disassemble`.
+    fn assemble_decoded(
+        &self,
+        check: &MachineCodeCheck<'_>,
+        instructions: &[DecodedInstruction],
+    ) -> Result<Vec<u8>>;
 }
 
 #[derive(Debug, Clone, Default)]

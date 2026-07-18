@@ -47,7 +47,19 @@
       "id": "verified-machine-code",
       "scenario": "verified_machine_code",
       "expected": "accept",
-      "given": "the target verifier matches replacement bytes to the assembly source and fully decodes the declared ISA profile"
+      "given": "the target verifier matches replacement bytes to the assembly source, returns a contiguous structured decode, and reassembles that decode to the same bytes"
+    },
+    {
+      "id": "machine-code-decode-gap",
+      "scenario": "machine_code_decode_gap",
+      "expected": "reject",
+      "given": "the target verifier leaves a gap between decoded instructions"
+    },
+    {
+      "id": "machine-code-reassembly-mismatch",
+      "scenario": "machine_code_reassembly_mismatch",
+      "expected": "reject",
+      "given": "the structured decode reassembles to bytes that differ from the replacement"
     }
   ]
 }

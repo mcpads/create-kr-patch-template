@@ -33,7 +33,7 @@ fn write(
 struct ExactAssemblyVerifier;
 
 impl MachineCodeVerifier for ExactAssemblyVerifier {
-    fn assemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>> {
+    fn assemble_source(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>> {
         ensure!(
             check.provenance.assembly_source_id == "asm/hook.s",
             "unexpected assembly source"
@@ -45,9 +45,35 @@ impl MachineCodeVerifier for ExactAssemblyVerifier {
         Ok(vec![0xaa, 0xbb])
     }
 
-    fn decoded_len(&self, check: &MachineCodeCheck<'_>) -> Result<usize> {
+    fn disassemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<DecodedInstruction>> {
         ensure!(check.write.replacement == [0xaa, 0xbb]);
-        Ok(2)
+        Ok(vec![
+            DecodedInstruction {
+                offset: 0,
+                len: 1,
+                canonical: "fixture_a".to_owned(),
+            },
+            DecodedInstruction {
+                offset: 1,
+                len: 1,
+                canonical: "fixture_b".to_owned(),
+            },
+        ])
+    }
+
+    fn assemble_decoded(
+        &self,
+        _check: &MachineCodeCheck<'_>,
+        instructions: &[DecodedInstruction],
+    ) -> Result<Vec<u8>> {
+        instructions
+            .iter()
+            .map(|instruction| match instruction.canonical.as_str() {
+                "fixture_a" => Ok(0xaa),
+                "fixture_b" => Ok(0xbb),
+                canonical => anyhow::bail!("unknown fixture instruction {canonical}"),
+            })
+            .collect()
     }
 }
 

@@ -152,16 +152,54 @@ impl WritePlan {
                     provenance,
                     baseline,
                 };
-                let assembled = verifier.assemble(&check)?;
+                let assembled = verifier.assemble_source(&check)?;
                 ensure!(
                     assembled == write.replacement,
                     "Expected Write {} replacement differs from assembled source {}",
                     write.id,
                     provenance.assembly_source_id
                 );
+                let instructions = verifier.disassemble(&check)?;
                 ensure!(
-                    verifier.decoded_len(&check)? == write.replacement.len(),
-                    "Expected Write {} does not decode completely under ISA profile {}",
+                    !instructions.is_empty(),
+                    "Expected Write {} has no decoded instructions under ISA profile {}",
+                    write.id,
+                    provenance.isa_profile_id
+                );
+                let mut decoded_len = 0;
+                for instruction in &instructions {
+                    ensure!(
+                        instruction.offset == decoded_len,
+                        "Expected Write {} decoded instruction at {:#X} does not continue at {:#X}",
+                        write.id,
+                        instruction.offset,
+                        decoded_len
+                    );
+                    ensure!(
+                        instruction.len > 0,
+                        "Expected Write {} has an empty decoded instruction at {:#X}",
+                        write.id,
+                        instruction.offset
+                    );
+                    ensure!(
+                        !instruction.canonical.trim().is_empty(),
+                        "Expected Write {} has no canonical instruction at {:#X}",
+                        write.id,
+                        instruction.offset
+                    );
+                    decoded_len = decoded_len
+                        .checked_add(instruction.len)
+                        .context("decoded machine-code length overflow")?;
+                }
+                ensure!(
+                    decoded_len == write.replacement.len(),
+                    "Expected Write {} structured decode does not cover the replacement under ISA profile {}",
+                    write.id,
+                    provenance.isa_profile_id
+                );
+                ensure!(
+                    verifier.assemble_decoded(&check, &instructions)? == write.replacement,
+                    "Expected Write {} decoded instructions do not reassemble to the replacement under ISA profile {}",
                     write.id,
                     provenance.isa_profile_id
                 );

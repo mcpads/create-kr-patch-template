@@ -4,8 +4,8 @@ use std::ops::Range;
 
 use anyhow::{Result, ensure};
 use patch_guard::{
-    ExpectedWrite, ImageRegion, MachineCodeCheck, MachineCodeProvenance, MachineCodeVerifier,
-    RegionKind, WriteIntent, WritePlan,
+    DecodedInstruction, ExpectedWrite, ImageRegion, MachineCodeCheck, MachineCodeProvenance,
+    MachineCodeVerifier, RegionKind, WriteIntent, WritePlan,
 };
 
 use support::run_manifest;
@@ -49,7 +49,16 @@ fn run_write_scenario(scenario: &str) -> Result<()> {
         }
         "machine_code_without_verifier" => machine_code_plan().apply(&baseline, None).map(|_| ()),
         "verified_machine_code" => machine_code_plan()
-            .apply(&baseline, Some(&FixtureIsaVerifier))
+            .apply(&baseline, Some(&FixtureIsaVerifier::exact()))
+            .map(|_| ()),
+        "machine_code_decode_gap" => machine_code_plan()
+            .apply(&baseline, Some(&FixtureIsaVerifier::with_gap()))
+            .map(|_| ()),
+        "machine_code_reassembly_mismatch" => machine_code_plan()
+            .apply(
+                &baseline,
+                Some(&FixtureIsaVerifier::with_reassembly_mismatch()),
+            )
             .map(|_| ()),
         other => panic!("unknown write-plan conformance scenario {other}"),
     }
@@ -88,18 +97,74 @@ fn machine_code_plan() -> WritePlan {
     }
 }
 
-struct FixtureIsaVerifier;
+struct FixtureIsaVerifier {
+    decode_gap: bool,
+    reassembly_mismatch: bool,
+}
+
+impl FixtureIsaVerifier {
+    fn exact() -> Self {
+        Self {
+            decode_gap: false,
+            reassembly_mismatch: false,
+        }
+    }
+
+    fn with_gap() -> Self {
+        Self {
+            decode_gap: true,
+            reassembly_mismatch: false,
+        }
+    }
+
+    fn with_reassembly_mismatch() -> Self {
+        Self {
+            decode_gap: false,
+            reassembly_mismatch: true,
+        }
+    }
+}
 
 impl MachineCodeVerifier for FixtureIsaVerifier {
-    fn assemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>> {
+    fn assemble_source(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<u8>> {
         ensure!(check.provenance.assembly_source_id == "asm/hook.s");
         ensure!(check.provenance.isa_profile_id == "fixture-isa-v1");
         Ok(vec![0xaa, 0xbb])
     }
 
-    fn decoded_len(&self, check: &MachineCodeCheck<'_>) -> Result<usize> {
+    fn disassemble(&self, check: &MachineCodeCheck<'_>) -> Result<Vec<DecodedInstruction>> {
         ensure!(check.write.replacement == [0xaa, 0xbb]);
-        Ok(2)
+        Ok(vec![
+            DecodedInstruction {
+                offset: 0,
+                len: 1,
+                canonical: "fixture_a".to_owned(),
+            },
+            DecodedInstruction {
+                offset: usize::from(self.decode_gap) + 1,
+                len: 1,
+                canonical: "fixture_b".to_owned(),
+            },
+        ])
+    }
+
+    fn assemble_decoded(
+        &self,
+        _check: &MachineCodeCheck<'_>,
+        instructions: &[DecodedInstruction],
+    ) -> Result<Vec<u8>> {
+        let mut output: Vec<u8> = instructions
+            .iter()
+            .map(|instruction| match instruction.canonical.as_str() {
+                "fixture_a" => Ok(0xaa),
+                "fixture_b" => Ok(0xbb),
+                canonical => anyhow::bail!("unknown fixture instruction {canonical}"),
+            })
+            .collect::<Result<_>>()?;
+        if self.reassembly_mismatch {
+            output[1] ^= 0xff;
+        }
+        Ok(output)
     }
 }
 
